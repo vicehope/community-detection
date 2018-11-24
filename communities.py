@@ -55,9 +55,10 @@ Ref: https://gist.github.com/shobhit/3236373
 """
 
 class Communities:
-    def __init__(self, ipt_txt, ipt_png):
+    def __init__(self, ipt_txt, ipt_png, delimiter):
         self.ipt_txt = ipt_txt
         self.ipt_png = ipt_png
+        self.delimiter = delimiter
         self.graph = None
 
     def initialize(self):
@@ -67,7 +68,7 @@ class Communities:
         # initialize 3rd-party libraries
         self.graph = nx.Graph()
         # load data
-        self.load_txt(self.ipt_txt)
+        self.load_txt(self.ipt_txt, self.delimiter)
 
         
     """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -266,7 +267,7 @@ class Communities:
         coms = nx.connected_components(part_graph)
         for com in coms:
             nodes = list(com) 
-            np.random.seed( len(nodes)*sum(nodes)*reduce(mul, nodes, 1)*min(nodes)*max(nodes) )
+            np.random.seed(len(nodes)*sum(nodes)*reduce(mul, nodes, 1)*min(nodes)*max(nodes))
             colors = np.random.rand(4 if len(nodes)<4 else len(nodes)+1)
             nx.draw_networkx_nodes(G,pos,nodelist=nodes,node_size=500, node_color=colors)
 
@@ -286,19 +287,9 @@ class Communities:
     """                                                                              """    
     """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-    def load_txt(self, ipt_txt):        
-        input_data = open(ipt_txt, 'rU')
-        for line in input_data:
-            line = line.strip('\n')
-            line = str(line)
-            line = line.split(" ")
+    def load_txt(self, ipt_txt, delimiter=' '):
+        self.graph = nx.read_edgelist(path=ipt_txt, create_using=nx.Graph(), delimiter=delimiter, edgetype=int, nodetype=int)
 
-            if len(line) != 2:
-                self.quit("edge format for input.txt is error")
-
-            ending_node_a = int(line[0])
-            ending_node_b = int(line[1])
-            self.graph.add_edge(ending_node_a, ending_node_b, weight=0.6, len=3.0)
 
     def display_graph(self):
         G = self.graph
@@ -333,14 +324,12 @@ class Communities:
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 if __name__ == '__main__':
 
-    #ipt_txt = sys.argv[1]
-    ipt_txt = "input.txt"
-    #ipt_png = sys.argv[2]
-    ipt_png = "graph.png"
+    ipt_txt = sys.argv[1]
+    ipt_png = sys.argv[2]
 
-    c = Communities(ipt_txt, ipt_png)
+    c = Communities(ipt_txt, ipt_png, ' ')
     c.initialize()
     partition, part_graph, removed_edges = c.find_best_partition()
     c.display(partition)
     c.plot_graph(part_graph, removed_edges)
-
+    c.display_graph()
